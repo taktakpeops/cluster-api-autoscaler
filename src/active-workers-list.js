@@ -1,40 +1,35 @@
 'use strict';
 
-const { EventEmitter, } = require('events');
+const { EventEmitter } = require('events');
+const { ActiveWorker } = require('./active-worker');
+const { Module } = require('./modules/module');
 
 class ActiveWorkersList extends EventEmitter {
-  constructor(configuration = [
-    {
-      type: 'cpu',
-      limit: 50, // threshold set 50% of the CPU
-    },
-    {
-      type: 'mem',
-      limit: 50, // threshold set 50% of the RAM available
-    },
-  ]) {
+  constructor() {
     super();
     this.stack = [];
-    this.configuration = configuration;
   }
 
-  _proxyHandler() {
-    return {
-      set: function (target, property, value) { // eslint-disable-line object-shorthand
-        target[property] = value;
+  loadMetrics(config) {
+    this.metrics = config.map(conf => {
+      if (conf.plugin) {
+        const ClassPlugin = require(`${conf.path}/modules/${conf.type}`);
+        const m = new ClassPlugin();
 
-        // keep in memory only the last 10 seconds (10 last records per workers)
-        const workersHistory = target.reduce((acc, w) => {
-          acc[w.worker] = acc[w.worker] ? (acc[w.worker] + 1) : 0;
-          return acc;
-        }, {});
-        Object.keys(workersHistory)
-          .filter(x => x > 10);
-      },
-    };
+        if (m instanceof Module) {
+          return {
+            type: conf.type,
+            module: m,
+          };
+        }
+        throw new TypeError(`Plugin ${conf.type} doesn't match requirements. It doesn't extends the Module class`);
+      }
+      return require(`./modules/${conf.type}`);
+    });
   }
 
-  add(value) {
+  add(configuration) {
+    const worker = new ActiveWorker(configuration);
     this.stack.push(value);
 
     const history = this.getWorkerHistory(value.worker);

@@ -1,16 +1,16 @@
 'use strict';
 
 const cluster = require('cluster');
-const { EventEmitter, } = require('events');
+const { EventEmitter } = require('events');
 
-const { hrtimeToMS, usageToTotalUsageMS, } = require('./cpu-utils');
-const { wait, } = require('./utils');
+const { hrtimeToMS, usageToTotalUsageMS } = require('./modules/cpu-utils');
+const { wait } = require('./utils');
 
 if (cluster.isWorker) {
   throw new Error('The auto scaler can be used only in the master');
 }
 
-const { INTERVAL_TICKER = 1000, } = process.env;
+const { INTERVAL_TICKER = 1000 } = process.env;
 
 class ActiveWorkersList extends EventEmitter {
   constructor(configuration = [
@@ -119,7 +119,7 @@ function workerMessageHandler(worker) {
 }
 
 async function scaleUp(amountWorkers = 1) {
-  await Promise.all(Array.from({ length: amountWorkers, },
+  await Promise.all(Array.from({ length: amountWorkers },
     () => new Promise(resolve => {
       const worker = cluster.fork();
 
@@ -158,7 +158,7 @@ async function cpuAutoScaler(configuration, value, aw) {
   const cpuLimit = parseInt(configuration.metrics.find(metric => metric.type === 'cpu').limit, 10);
 
   if (!isNaN(cpuLimit) && isFinite(cpuLimit)) {
-    const { worker, cpuUsage, } = value;
+    const { worker, cpuUsage } = value;
 
     const history = aw.getWorkersHistory(10000, [
       'master',

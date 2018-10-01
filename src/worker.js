@@ -5,7 +5,7 @@ const cluster = require('cluster');
 const {
   hrtimeToMS,
   usageToTotalUsageMS,
-} = require('./cpu-utils');
+} = require('./modules/cpu-utils');
 
 if (cluster.isMaster) {
   throw new Error('The worker script cannot be run by the cluster master');

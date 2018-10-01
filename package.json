@@ -12,7 +12,7 @@
     "envs": ["node"],
     "globals": ["it", "describe", "beforeEach", "afterEach"],
     "rules": {
-      "comma-dangle": ["error", "always"],
+      "comma-dangle": ["error", "always-multiline"],
       "capitalized-comments": ["error", "never"],
       "object-curly-spacing": ["error", "always"]
     },

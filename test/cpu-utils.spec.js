@@ -5,7 +5,7 @@ const sinon = require('sinon');
 
 const {
   getCpuUsageInPercent,
-} = require('../src/cpu-utils');
+} = require('../src/modules/cpu');
 
 describe('test cpu-utils.js', () => {
   /** @type sinon.SinonSandbox */
