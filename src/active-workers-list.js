@@ -1,44 +1,14 @@
 'use strict';
 
-const { EventEmitter } = require('events');
 const { ActiveWorker } = require('./active-worker');
-const { Module } = require('./modules/module');
 
-class ActiveWorkersList extends EventEmitter {
+class ActiveWorkersList {
   constructor() {
-    super();
     this.stack = [];
   }
 
-  loadMetrics(config) {
-    this.metrics = config.map(conf => {
-      if (conf.plugin) {
-        const ClassPlugin = require(`${conf.path}/modules/${conf.type}`).default;
-        const m = new ClassPlugin();
-
-        if (m instanceof Module) {
-          return {
-            ...conf,
-            module: m,
-          };
-        }
-        throw new TypeError(`Plugin ${conf.type} doesn't match requirements. It doesn't extends the Module class`);
-      }
-      return { ...conf, module: require(`./modules/${conf.type}`).default };
-    });
-  }
-
   add(name, configuration = [{ type: 'cpu' }, { type: 'mem' }]) {
-    const config = configuration.reduce((toWatch, metric) => {
-      const metricObject = this.metrics.find(m => m.type === metric.type);
-
-      if (metricObject) {
-        toWatch.push(metricObject);
-      }
-      return toWatch;
-    }, []);
-
-    const worker = new ActiveWorker(name, config);
+    const worker = new ActiveWorker(name, configuration);
 
     this.stack.push(worker);
   }
@@ -54,6 +24,10 @@ class ActiveWorkersList extends EventEmitter {
       }
       return acc;
     }, []);
+  }
+
+  lastItem() {
+    return this.stack[this.stack.length - 1].name;
   }
 }
 

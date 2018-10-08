@@ -61,5 +61,7 @@
     "sinon": "^6.3.4",
     "xo": "^0.23.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "commander": "^2.18.0"
+  }
 }

@@ -5,7 +5,7 @@ const { Module } = require('./module');
 // the INTERVAL_TICKER can be overriden using environment
 // example:
 //  export INTERVAL_TICKER=500
-const { INTERVAL_TICKER = '1000' } = process.env;
+const { INTERVAL_TICKER = '100' } = process.env;
 
 // nanosecond per second
 const NS_PER_SEC = 1e9;
@@ -25,7 +25,7 @@ function usageToTotalUsageMS(elapUsage) {
   return elapUserMS + elapSystMS;
 }
 
-function getCpuUsageInPercent(startHrTime, startCpuUsage) {
+function getCpuUsageInPercent(startCpuUsage, startHrTime) {
   const elapTimeMS = hrtimeToMS(process.hrtime(startHrTime));
   const elapUsageMS = usageToTotalUsageMS(process.cpuUsage(startCpuUsage));
 
@@ -52,7 +52,7 @@ class CpuWatcher extends Module {
   }
 
   stopWatcher() {
-    clearInterval(this.pid);
+    this.pid.unref();
   }
 }
 

@@ -8,17 +8,7 @@ class ActiveWorker extends EventEmitter {
    * @param {String} name The name of the worker can be PID
    * @param {Array} config The configuration for the different tresholds
    */
-  constructor(name, config = [
-    {
-      type: 'cpu',
-      handler: () => {},
-      limit: 50, // threshold set 50% of the CPU
-    },
-    {
-      type: 'mem',
-      limit: 50, // threshold set 50% of the RAM available
-    },
-  ]) {
+  constructor(name, config) {
     super();
 
     if (!name) {
@@ -64,7 +54,7 @@ class ActiveWorker extends EventEmitter {
   getWorkerHistory(type, limit = 1000) {
     const now = Date.now();
 
-    return this.stack
+    return this.records
       .filter(w => w.type === type && w.time >= now - limit);
   }
 
