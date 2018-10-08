@@ -1,0 +1,65 @@
+{
+  "name": "cluster-autoscaler",
+  "version": "0.0.1",
+  "description": "An auto-scaler for the cluster API.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha",
+    "lint": "xo"
+  },
+  "xo": {
+    "ecmaVersion": 6,
+    "envs": [
+      "node"
+    ],
+    "globals": [
+      "it",
+      "describe",
+      "beforeEach",
+      "afterEach"
+    ],
+    "rules": {
+      "comma-dangle": [
+        "error",
+        "always-multiline"
+      ],
+      "capitalized-comments": [
+        "error",
+        "never"
+      ],
+      "object-curly-spacing": [
+        "error",
+        "always"
+      ]
+    },
+    "semicolon": true,
+    "ignores": [
+      "./node_modules"
+    ],
+    "space": true
+  },
+  "engines": {
+    "node": ">=8.11.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jackTheRipper/cluster-api-autoscaler.git"
+  },
+  "keywords": [
+    "autoscaler",
+    "cluster-api"
+  ],
+  "author": "jbaudin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jackTheRipper/cluster-api-autoscaler/issues"
+  },
+  "homepage": "https://github.com/jackTheRipper/cluster-api-autoscaler#readme",
+  "devDependencies": {
+    "@types/sinon": "^5.0.2",
+    "mocha": "^5.2.0",
+    "sinon": "^6.3.4",
+    "xo": "^0.23.0"
+  },
+  "dependencies": {}
+}
