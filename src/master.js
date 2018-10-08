@@ -19,10 +19,18 @@ let metricsList = [];
 function getWorkerRecordsInPercentAvg(worker, metricType, limit = 1000) {
   const history = worker.getWorkerHistory(metricType, limit);
 
-  return (history.reduce((acc, v) => {
-    acc += v.value;
-    return acc;
-  }, 0) / history.length * 100);
+  if (history.length > 0) {
+    const totalItem = history.length;
+    const totalSum = history.reduce((acc, v) => {
+      acc += v.value;
+
+      return acc;
+    }, 0);
+
+    return totalSum / totalItem;
+  }
+
+  return 0;
 }
 
 function intializeWorker(worker) {
@@ -32,18 +40,19 @@ function intializeWorker(worker) {
 
   const w = activeWorkers.getWorker(id);
 
-  worker.on('message', w.onNewMetric.bind(w));
+  const msn = w.onNewMetric.bind(w);
+  worker.on('message', msn);
 
   metricsList.forEach(metric => {
     w.on(`increase-${metric.type}`, async () => {
-      console.log('hello', getWorkerRecordsInPercentAvg(w, metric.type));
       if (getWorkerRecordsInPercentAvg(w, metric.type) >= metric.limit && Object.keys(cluster.workers).length < maxWorkers) {
         await scaleUp(1);
         w.hasScaled();
       }
     });
+
     w.on(`decrease-${metric.type}`, async () => {
-      if (getWorkerRecordsInPercentAvg(w, metric.type) <= metric.limit + 10 && Object.keys(cluster.workers).length >= minWorkers) {
+      if (getWorkerRecordsInPercentAvg(w, metric.type) <= metric.limit + 10 && Object.keys(cluster.workers).length > minWorkers) {
         await scaleDown(1);
         w.hasScaled();
       }
@@ -55,7 +64,9 @@ async function scaleUp(amountWorkers = 1) {
   await Promise.all(Array.from({ length: amountWorkers },
     () => new Promise(resolve => {
       const worker = cluster.fork();
+
       intializeWorker(worker);
+
       worker.on('online', resolve);
     })
   ));

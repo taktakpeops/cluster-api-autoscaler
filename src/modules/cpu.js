@@ -5,7 +5,7 @@ const { Module } = require('./module');
 // the INTERVAL_TICKER can be overriden using environment
 // example:
 //  export INTERVAL_TICKER=500
-const { INTERVAL_TICKER = '100' } = process.env;
+const { INTERVAL_TICKER = '500' } = process.env;
 
 // nanosecond per second
 const NS_PER_SEC = 1e9;

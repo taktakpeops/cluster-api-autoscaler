@@ -5,7 +5,7 @@ const { Module } = require('./module');
 // the INTERVAL_TICKER can be overriden using environment
 // example:
 //  export INTERVAL_TICKER=500
-const { INTERVAL_TICKER = '1000' } = process.env;
+const { INTERVAL_TICKER = '500' } = process.env;
 
 const BYTE_TO_MB = 1024 ** 2;
 
@@ -24,13 +24,13 @@ class MemWatcher extends Module {
         this.heapUsedMb = process.memoryUsage().heapUsed / BYTE_TO_MB;
         this.heapTotalMb = process.memoryUsage().heapTotal / BYTE_TO_MB;
 
-        handler(this.heapUsedMb / this.heapTotal * 100);
+        handler(this.heapUsedMb / this.heapTotalMb * 100);
       });
     }, intervalTicker);
   }
 
   stopWatcher() {
-    clearInterval(this.pid);
+    this.pid.unref();
   }
 }
 
