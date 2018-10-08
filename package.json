@@ -9,15 +9,33 @@
   },
   "xo": {
     "ecmaVersion": 6,
-    "envs": ["node"],
-    "globals": ["it", "describe", "beforeEach", "afterEach"],
+    "envs": [
+      "node"
+    ],
+    "globals": [
+      "it",
+      "describe",
+      "beforeEach",
+      "afterEach"
+    ],
     "rules": {
-      "comma-dangle": ["error", "always-multiline"],
-      "capitalized-comments": ["error", "never"],
-      "object-curly-spacing": ["error", "always"]
+      "comma-dangle": [
+        "error",
+        "always-multiline"
+      ],
+      "capitalized-comments": [
+        "error",
+        "never"
+      ],
+      "object-curly-spacing": [
+        "error",
+        "always"
+      ]
     },
     "semicolon": true,
-    "ignores": ["./node_modules"],
+    "ignores": [
+      "./node_modules"
+    ],
     "space": true
   },
   "engines": {
@@ -42,5 +60,6 @@
     "mocha": "^5.2.0",
     "sinon": "^6.3.4",
     "xo": "^0.23.0"
-  }
+  },
+  "dependencies": {}
 }

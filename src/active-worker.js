@@ -28,9 +28,23 @@ class ActiveWorker extends EventEmitter {
     this.name = name;
     this.config = config;
     this.records = [];
+    this.scaled = false;
+  }
+
+  hasScaled(limit = 1000) {
+    this.scaled = true;
+
+    setTimeout(() => {
+      this.scaled = false;
+      this.cleanRecords();
+    }, limit);
   }
 
   onNewMetric(event) {
+    if (this.scaled) {
+      return;
+    }
+
     const { type, value, time } = event;
 
     const conf = this.config.find(x => x.type === type);
@@ -39,6 +53,19 @@ class ActiveWorker extends EventEmitter {
       this.emit(`${conf.limit < value ? 'increase' : 'decrease'}-${type}`, { time, value });
       this.records.push({ ...event });
     }
+  }
+
+  /**
+   * return the entries for a worker
+   * @param {String} type the type of metrics
+   * @param {Number} limit Optional, define a time limit in milliseconds for the records.
+   * @returns {Array} The messages for the given period of time
+   */
+  getWorkerHistory(type, limit = 1000) {
+    const now = Date.now();
+
+    return this.stack
+      .filter(w => w.type === type && w.time >= now - limit);
   }
 
   cleanRecords() {

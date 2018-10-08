@@ -29,7 +29,7 @@ function getCpuUsageInPercent(startHrTime, startCpuUsage) {
   const elapTimeMS = hrtimeToMS(process.hrtime(startHrTime));
   const elapUsageMS = usageToTotalUsageMS(process.cpuUsage(startCpuUsage));
 
-  return (100.0 * elapUsageMS / elapTimeMS).toFixed(1);
+  return (100.0 * elapUsageMS / elapTimeMS);
 }
 
 class CpuWatcher extends Module {
@@ -47,7 +47,7 @@ class CpuWatcher extends Module {
       this.elapsedCpuTime = process.cpuUsage(this.elapsedCpuTime);
       this.elapsedHrTime = process.hrtime(this.elapsedHrTime);
 
-      handler(this.elapsedCpuTime, this.elapsedHrTime);
+      handler(getCpuUsageInPercent(this.elapsedCpuTime, this.elapsedHrTime));
     }, intervalTicker);
   }
 
@@ -61,5 +61,5 @@ module.exports = {
   hrtimeToMS,
   usageToTotalUsageMS,
   CpuError,
-  CpuWatcher,
+  default: CpuWatcher,
 };

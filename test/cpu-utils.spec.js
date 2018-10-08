@@ -29,6 +29,6 @@ describe('test cpu-utils.js', () => {
       system: 2000000,
     });
 
-    assert.strictEqual(getCpuUsageInPercent(), 50);
+    assert.strictEqual(getCpuUsageInPercent(), 50.0);
   });
 });

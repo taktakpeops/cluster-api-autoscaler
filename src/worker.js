@@ -2,10 +2,20 @@
 
 const cluster = require('cluster');
 
+if (cluster.isMaster) {
+  throw new Error('The worker script cannot be run by the cluster master');
+}
+
+const { argv } = process;
+
+if (argv.length < 2) {
+  throw new TypeError('no bitch');
+}
+
 const {
   hrtimeToMS,
   usageToTotalUsageMS,
-} = require('./modules/cpu-utils');
+} = require('./modules/cpu');
 
 if (cluster.isMaster) {
   throw new Error('The worker script cannot be run by the cluster master');
