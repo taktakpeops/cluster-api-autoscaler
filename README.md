@@ -10,7 +10,7 @@ Such as the Horizontal Pod Autoscaler of Kubernetes, the module aims to provide 
 
 ## Usage
 
-For now, the CLI is mot available.
+For now, the CLI is not available.
 
 An example of implementation can be found in the examples folder.
 
