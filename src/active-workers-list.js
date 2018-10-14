@@ -3,12 +3,14 @@
 const { ActiveWorker } = require('./active-worker');
 
 class ActiveWorkersList {
-  constructor() {
+  constructor(configuration = [{ type: 'cpu' }, { type: 'mem' }]) {
+    this.configuration = configuration;
+
     this.stack = [];
   }
 
-  add(name, configuration = [{ type: 'cpu' }, { type: 'mem' }]) {
-    const worker = new ActiveWorker(name, configuration);
+  add(name) {
+    const worker = new ActiveWorker(name, this.configuration);
 
     this.stack.push(worker);
   }
@@ -17,13 +19,20 @@ class ActiveWorkersList {
     return this.stack.find(w => w.name === name);
   }
 
-  cleanWorker(name) {
+  removeWorker(name) {
     this.stack = this.stack.reduce((acc, worker) => {
       if (worker.name !== name) {
         acc.push(worker);
       }
       return acc;
     }, []);
+  }
+
+  getWarmWorkers(limit = 1000) {
+    return this.stack
+      .map(w => ({ ...limit, avg: w.getWorkerRecordsInPercentAvg(w.type, limit) }))
+      .filter(worker => worker.avg > worker.limit)
+      .map(obj => ({ name: obj.name }));
   }
 
   lastItem() {

@@ -1,5 +1,7 @@
 'use strict';
 
+const cluster = require('cluster');
+const os = require('os');
 const { Module } = require('./module');
 
 // the INTERVAL_TICKER can be overriden using environment
@@ -11,6 +13,22 @@ const BYTE_TO_MB = 1024 ** 2;
 
 class MemError extends TypeError { }
 
+function getMemoryUsageInPercent() {
+  const rssUsedMb = process.memoryUsage().rss / BYTE_TO_MB;
+  const heapTotalMb = process.memoryUsage().heapTotal / BYTE_TO_MB;
+
+  return (heapTotalMb / rssUsedMb * 100);
+}
+
+function canScaleUp() {
+  const amountOfWorkers = Object.keys(cluster.workers).length;
+  const totalUsedPerWorker = (os.totalmem() - os.freemem()) / amountOfWorkers;
+
+  const totalNeededPerWorker = 0.3 * totalUsedPerWorker;
+
+  return totalNeededPerWorker < (os.freemem() / amountOfWorkers);
+}
+
 class MemWatcher extends Module {
   startWatcher(handler) {
     const intervalTicker = parseInt(INTERVAL_TICKER, 10);
@@ -20,12 +38,7 @@ class MemWatcher extends Module {
     }
 
     this.pid = setInterval(() => {
-      process.nextTick(() => {
-        this.heapUsedMb = process.memoryUsage().heapUsed / BYTE_TO_MB;
-        this.heapTotalMb = process.memoryUsage().heapTotal / BYTE_TO_MB;
-
-        handler(this.heapUsedMb / this.heapTotalMb * 100);
-      });
+      process.nextTick(() => handler(getMemoryUsageInPercent()));
     }, intervalTicker);
   }
 
@@ -36,5 +49,6 @@ class MemWatcher extends Module {
 
 module.exports = {
   MemError,
+  canScaleUp,
   default: MemWatcher,
 };

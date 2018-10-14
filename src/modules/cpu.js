@@ -1,5 +1,7 @@
 'use strict';
 
+const os = require('os');
+
 const { Module } = require('./module');
 
 // the INTERVAL_TICKER can be overriden using environment
@@ -32,6 +34,16 @@ function getCpuUsageInPercent(startCpuUsage, startHrTime) {
   return (100.0 * elapUsageMS / elapTimeMS);
 }
 
+function canScaleUp() {
+  const avgsCpu = os.loadavg();
+  const availbleCpus = os.cpus();
+
+  return avgsCpu.reduceRight((acc, avg) => {
+    acc.push(avg < availbleCpus.length - 1);
+    return acc;
+  }, []).every(x => x);
+}
+
 class CpuWatcher extends Module {
   startWatcher(handler) {
     const intervalTicker = parseInt(INTERVAL_TICKER, 10);
@@ -53,6 +65,7 @@ class CpuWatcher extends Module {
 
   stopWatcher() {
     this.pid.unref();
+    this.alertPid.unref();
   }
 }
 
@@ -61,5 +74,6 @@ module.exports = {
   hrtimeToMS,
   usageToTotalUsageMS,
   CpuError,
+  canScaleUp,
   default: CpuWatcher,
 };

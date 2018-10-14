@@ -1,12 +1,16 @@
 'use strict';
 
+const { EventEmitter } = require('events');
+
 class ModuleError extends TypeError {}
 
-class Module {
+class Module extends EventEmitter {
   constructor() {
     if (new.target === Module) {
       throw new ModuleError('this is an abstract class');
     }
+
+    super();
 
     if (!this.startWatcher) {
       throw new ModuleError('the class hasn\'t a method called `startWatcher`');
