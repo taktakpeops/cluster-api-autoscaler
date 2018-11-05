@@ -7,9 +7,14 @@ const { EventEmitter } = require('events');
  */
 class ActiveWorker extends EventEmitter {
   /**
+   * @typedef {Object} Config
+   * @property {String} type
+   * @property {Number} limit
+   */
+  /**
    * create a new worker
    * @param {String} name The name of the worker can be PID
-   * @param {Array} config The configuration for the different tresholds
+   * @param {Array.<Config>} config The configuration for the different tresholds
    */
   constructor(name, config) {
     super();
@@ -47,8 +52,15 @@ class ActiveWorker extends EventEmitter {
   }
 
   /**
+   * @typedef {Object} WorkerEvent
+   * @property {String} type
+   * @property {Number} value
+   * @property {Number} time The time of capture in milliseconds
+   */
+
+  /**
    * the handler to set for the `message` event emit by a worker
-   * @param {Object} event The event describing the metric provided by a worker
+   * @param {WorkerEvent} event The event describing the metric provided by a worker
    */
   onNewMetric(event) {
     if (this.scaled) {

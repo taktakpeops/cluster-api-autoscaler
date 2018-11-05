@@ -4,7 +4,7 @@ const cluster = require('cluster');
 const fs = require('fs');
 const program = require('commander');
 const npmPackageJson = require('../package.json');
-const { Module } = require('./modules/module');
+const { loadModules } = require('./utils');
 
 if (cluster.isMaster) {
   throw new Error('The worker script cannot be run by the cluster master');
@@ -48,23 +48,7 @@ program
 
 const { file, metrics, customModulePath } = program;
 
-const metricsModules = metrics.map(metric => {
-  let ClassPlugin = null;
-
-  if (metric.type === 'cpu' || metric.type === 'mem') {
-    ClassPlugin = require(`./modules/${metric.type}`).default;
-  } else {
-    ClassPlugin = require(`${customModulePath}/${metric.type}`).default;
-  }
-
-  const m = new ClassPlugin();
-
-  if (!(m instanceof Module)) {
-    throw new TypeError(`Plugin ${metric.type} doesn't match requirements. It doesn't extends the Module class`);
-  }
-
-  return { ...metric, module: m };
-});
+const metricsModules = loadModules(metrics, customModulePath);
 
 require(file); // eslint-disable-line import/no-unassigned-import
 

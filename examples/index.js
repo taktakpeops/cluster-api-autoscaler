@@ -16,4 +16,6 @@ as({
   ],
   min: 1,
   max: 5,
+}).then(() => console.log('it has started.')).catch(error => {
+  console.error('something went wrong', error);
 });

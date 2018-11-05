@@ -9,52 +9,39 @@ if (cluster.isWorker) {
   throw new Error('The auto scaler can be used only in the master');
 }
 
-const activeWorkers = new ActiveWorkersList();
-
+/** @type {ActiveWorkersList} */
+let activeWorkers;
+/** @type {Number} */
 let maxWorkers;
+/** @type {Number} */
 let minWorkers;
 
 let metricsList = [];
 
-function getWorkerRecordsInPercentAvg(worker, metricType, limit = 1000) {
-  const history = worker.getWorkerHistory(metricType, limit);
-
-  if (history.length > 0) {
-    const totalItem = history.length;
-    const totalSum = history.reduce((acc, v) => {
-      acc += v.value;
-
-      return acc;
-    }, 0);
-
-    return totalSum / totalItem;
-  }
-
-  return 0;
-}
-
-function intializeWorker(worker) {
-  const id = worker.id.toString(10);
-
-  activeWorkers.add(id, metricsList);
-
-  const w = activeWorkers.getWorker(id);
-
-  const msn = w.onNewMetric.bind(w);
+function intializeWorker(worker, metrics) {
+  const msn = worker.onNewMetric.bind(worker);
   worker.on('message', msn);
 
-  metricsList.forEach(metric => {
-    w.on(`increase-${metric.type}`, async () => {
-      if (getWorkerRecordsInPercentAvg(w, metric.type) >= metric.limit && Object.keys(cluster.workers).length < maxWorkers) {
+  metrics.forEach(metric => {
+    worker.on(`increase-${metric.type}`, async () => {
+      if (
+        worker.getWorkerRecordsInPercentAvg(metric.type) >= metric.limit &&
+        Object.keys(cluster.workers).length < maxWorkers &&
+        !worker.scaled
+      ) {
         await scaleUp(1);
-        w.hasScaled();
+        worker.hasScaled();
       }
     });
 
-    w.on(`decrease-${metric.type}`, async () => {
-      if (getWorkerRecordsInPercentAvg(w, metric.type) <= metric.limit + 10 && Object.keys(cluster.workers).length > minWorkers) {
+    worker.on(`decrease-${metric.type}`, async () => {
+      if (
+        worker.getWorkerRecordsInPercentAvg(metric.type) <= metric.limit + 10 &&
+        Object.keys(cluster.workers).length > minWorkers &&
+        !worker.scaled
+      ) {
         await scaleDown(1);
-        w.hasScaled();
+        worker.hasScaled();
       }
     });
   });
@@ -64,8 +51,11 @@ async function scaleUp(amountWorkers = 1) {
   await Promise.all(Array.from({ length: amountWorkers },
     () => new Promise(resolve => {
       const worker = cluster.fork();
+      const id = worker.id.toString(10);
 
-      intializeWorker(worker);
+      const w = activeWorkers.add(id);
+
+      intializeWorker(w, metricsList);
 
       worker.on('online', resolve);
     })
@@ -77,8 +67,6 @@ async function scaleDown(amountWorkers = 1) {
   const worker = cluster.workers[oldestPid];
 
   if (worker && worker.isConnected() && !worker.isDead()) {
-    // worker.disconnect();
-
     worker.send('shutdown');
 
     // wait for graceful kill
@@ -93,12 +81,12 @@ async function scaleDown(amountWorkers = 1) {
   }
 }
 
-exports.start = ({
+exports.start = async ({
   workerScript,
   metrics,
   customMetricsPath,
-  min, // start with one worker
-  max,
+  min = 1, // start with one worker
+  max = 3,
 }) => {
   if (!cluster.isMaster) {
     throw new TypeError('cannot be used from a worker');
@@ -109,7 +97,7 @@ exports.start = ({
   }
 
   if (pisNaN(min, 10) || pisNaN(max, 10)) {
-    throw new TypeError('min and max need to be defined');
+    throw new TypeError('min and max need to be valid numbers');
   }
 
   minWorkers = min;
@@ -121,6 +109,7 @@ exports.start = ({
 
   metricsList = metrics;
 
+  activeWorkers = new ActiveWorkersList(metrics);
   // initial entry
   activeWorkers.add('master', metricsList);
 
@@ -137,8 +126,5 @@ exports.start = ({
     exec: `${__dirname}/worker.js`,
   });
 
-  for (let i = 0; i < minWorkers; i++) {
-    const worker = cluster.fork();
-    intializeWorker(worker);
-  }
+  await scaleUp(minWorkers);
 };

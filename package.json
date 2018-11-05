@@ -57,6 +57,7 @@
   "homepage": "https://github.com/jackTheRipper/cluster-api-autoscaler#readme",
   "devDependencies": {
     "@types/sinon": "^5.0.2",
+    "express": "^4.16.4",
     "mocha": "^5.2.0",
     "sinon": "^6.3.4",
     "xo": "^0.23.0"

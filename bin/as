@@ -1,0 +1,120 @@
+#!/usr/bin/env node
+
+const fs = require('fs');
+const program = require('commander');
+const as = require('../src/master').start;
+const npmPackageJson = require('../package.json');
+
+let minWorkers = parseInt(process.env.MIN_WORKERS, 10) || 1;
+let maxWorkers = parseInt(process.env.MAX_WORKERS, 10) || 3;
+
+let defaultConfig = [{
+  type: 'cpu',
+  limit: 50,
+}, {
+  type: 'mem',
+  limit: 50,
+}];
+
+const addOptions = prog => prog
+  .option('-f, --file <item>', 'your script', item => {
+    try {
+      const lstat = fs.lstatSync(item);
+
+      if (lstat.isFile()) {
+        return item;
+      }
+    } catch (error) {
+      throw error;
+    }
+  })
+  .option('--min', 'the minimum amount of workers', value => {
+    minWorkers = parseInt(value, 10);
+  }, minWorkers)
+  .option('--max', 'the maximum amount of workers', value => {
+    maxWorkers = parseInt(value, 10);
+  }, maxWorkers)
+  .option('-m, --metrics', 'comma separated list of metrics with their thresholds. e.g.: cpu:50,mem', value => {
+    const metrics = value.split(',');
+
+    defaultConfig = metrics.reduce((acc, element) => {
+      const def = element.split(':');
+
+      if (def.length === 2) {
+        acc.push({ type: def[0], limit: def[1] });
+      }
+
+      return acc;
+    }, []);
+  }, defaultConfig)
+  .option('-c, --custom-module-path <path>', 'the path to the custom modules', path => {
+    try {
+      const lstat = fs.lstatSync(path);
+
+      if (lstat.isDirectory()) {
+        return path;
+      }
+    } catch (error) {
+      if (!path) {
+        console.warn('no custom module path specified');
+        return '';
+      }
+      throw error;
+    }
+  });
+
+program
+  .version(npmPackageJson.version);
+
+const startAutoScaler = file => as({
+  workerScript: file,
+  metrics: defaultConfig,
+  customMetricsPath: program.customModulePath,
+  min: minWorkers,
+  max: maxWorkers,
+});
+
+const start = program
+  .command('start');
+addOptions(start)
+  .action(cmd => {
+    startAutoScaler(cmd.file)
+      .catch(error => {
+        console.error('something went wrong', error);
+        process.exit(1);
+      });
+  });
+
+const forever = program
+  .command('forever');
+addOptions(forever)
+  .option('--max-restart', 'the maximum amount of restarts. Default, undefined.', 0)
+  .action(cmd => {
+    let retries = -1;
+
+    if (cmd.maxRestart) {
+      retries = parseInt(cmd.maxRestart, 10);
+    }
+
+    const s = retry => {
+      return startAutoScaler()
+        .catch(async error => {
+          console.error('something went wrong', error);
+          if (retry > 0) {
+            retry -= 1;
+          }
+          if (retry > 0 || retry === -1) {
+            const r = await s(retry);
+            return r;
+          }
+          throw error;
+        });
+    };
+    s(retries).catch(error => {
+      console.error('it dies', error);
+      process.exit(1);
+    });
+  });
+
+program
+  .parse(process.argv);
