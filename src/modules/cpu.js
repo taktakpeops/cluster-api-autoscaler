@@ -10,14 +10,12 @@ const { Module } = require('./module');
 const { INTERVAL_TICKER = '500' } = process.env;
 
 // nanosecond per second
-const NS_PER_SEC = 1e9;
 const NS_TO_MS = 1e6;
 
 class CpuError extends TypeError {}
 
 function hrtimeToMS(hrtime) {
-  const timeInNs = (hrtime[0] * NS_PER_SEC) + hrtime[1];
-  return timeInNs / NS_TO_MS;
+  return (hrtime[0] * 1000.0) + (hrtime[1] / NS_TO_MS);
 }
 
 function usageToTotalUsageMS(elapUsage) {
@@ -31,7 +29,7 @@ function getCpuUsageInPercent(startCpuUsage, startHrTime) {
   const elapTimeMS = hrtimeToMS(process.hrtime(startHrTime));
   const elapUsageMS = usageToTotalUsageMS(process.cpuUsage(startCpuUsage));
 
-  return (100.0 * elapUsageMS / elapTimeMS);
+  return (100.0 * elapUsageMS / elapTimeMS).toFixed(1);
 }
 
 function canScaleUp() {
@@ -56,10 +54,10 @@ class CpuWatcher extends Module {
     this.elapsedHrTime = process.hrtime();
 
     this.pid = setInterval(() => {
-      this.elapsedCpuTime = process.cpuUsage(this.elapsedCpuTime);
-      this.elapsedHrTime = process.hrtime(this.elapsedHrTime);
-
       handler(getCpuUsageInPercent(this.elapsedCpuTime, this.elapsedHrTime));
+
+      this.elapsedCpuTime = process.cpuUsage();
+      this.elapsedHrTime = process.hrtime();
     }, intervalTicker);
   }
 
