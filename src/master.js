@@ -20,28 +20,31 @@ let metricsList = [];
 
 function intializeWorker(worker, metrics) {
   const msn = worker.onNewMetric.bind(worker);
-  worker.on('message', msn);
+  cluster.workers[worker.name].on('message', msn);
 
   metrics.forEach(metric => {
     worker.on(`increase-${metric.type}`, async () => {
       if (
         worker.getWorkerRecordsInPercentAvg(metric.type) >= metric.limit &&
         Object.keys(cluster.workers).length < maxWorkers &&
-        !worker.scaled
+        !activeWorkers.hasWorkerScaled()
       ) {
+        worker.hasScaled(5000);
         await scaleUp(1);
-        worker.hasScaled();
       }
     });
 
     worker.on(`decrease-${metric.type}`, async () => {
+      // look into total activities
+      const totalWorkers = Object.keys(cluster.workers).length;
       if (
-        worker.getWorkerRecordsInPercentAvg(metric.type) <= metric.limit + 10 &&
-        Object.keys(cluster.workers).length > minWorkers &&
-        !worker.scaled
+        worker.getWorkerRecordsInPercentAvg(metric.type) <= metric.limit - 10 &&
+        activeWorkers.getWarmWorkers(metric.type).length < totalWorkers - 1 &&
+        totalWorkers > minWorkers &&
+        !activeWorkers.hasWorkerScaled()
       ) {
+        worker.hasScaled(5000);
         await scaleDown(1);
-        worker.hasScaled();
       }
     });
   });
@@ -54,7 +57,8 @@ async function scaleUp(amountWorkers = 1) {
       const id = worker.id.toString(10);
 
       const w = activeWorkers.add(id);
-
+      // consider default warmup of 2000 ms
+      w.hasScaled(2000);
       intializeWorker(w, metricsList);
 
       worker.on('online', resolve);
@@ -73,7 +77,7 @@ async function scaleDown(amountWorkers = 1) {
     await wait(2000);
 
     worker.kill();
-    activeWorkers.cleanWorker(oldestPid);
+    activeWorkers.removeWorker(oldestPid);
   }
 
   if (amountWorkers > 1) {

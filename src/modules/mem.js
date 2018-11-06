@@ -2,6 +2,7 @@
 
 const cluster = require('cluster');
 const os = require('os');
+const v8 = require('v8');
 const { Module } = require('./module');
 
 // the INTERVAL_TICKER can be overriden using environment
@@ -14,12 +15,16 @@ const BYTE_TO_MB = 1024 ** 2;
 class MemError extends TypeError { }
 
 function getMemoryUsageInPercent() {
-  const rssUsedMb = process.memoryUsage().rss / BYTE_TO_MB;
-  const heapTotalMb = process.memoryUsage().heapTotal / BYTE_TO_MB;
+  const stats = v8.getHeapStatistics();
+  const physicalMem = stats.total_physical_size / BYTE_TO_MB;
+  const availableMem = stats.total_available_size / BYTE_TO_MB;
 
-  return (heapTotalMb / rssUsedMb * 100);
+  return (physicalMem / availableMem * 100);
 }
 
+/**
+ * @todo refactor !
+ */
 function canScaleUp() {
   const amountOfWorkers = Object.keys(cluster.workers).length;
   const totalUsedPerWorker = (os.totalmem() - os.freemem()) / amountOfWorkers;

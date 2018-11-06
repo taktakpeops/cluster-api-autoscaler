@@ -65,7 +65,6 @@ class CpuWatcher extends Module {
 
   stopWatcher() {
     this.pid.unref();
-    this.alertPid.unref();
   }
 }
 

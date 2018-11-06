@@ -59,6 +59,13 @@ class ActiveWorkersList {
   lastItem() {
     return this.stack[this.stack.length - 1].name;
   }
+
+  /**
+   * @returns {Boolean} Says if a worker has already triggered a scale up or a scale down
+   */
+  hasWorkerScaled() {
+    return this.stack.some(x => x.scaled);
+  }
 }
 
 module.exports = {

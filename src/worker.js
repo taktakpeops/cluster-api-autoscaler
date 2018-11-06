@@ -52,12 +52,23 @@ const metricsModules = loadModules(metrics, customModulePath);
 
 require(file); // eslint-disable-line import/no-unassigned-import
 
+let sendMsg = true;
+
 metricsModules.forEach(metric => {
-  metric.module.startWatcher(value => process.send({
-    type: metric.type,
-    value,
-    time: Date.now(),
-  }));
+  metric.module.startWatcher(value => {
+    if (sendMsg) {
+      return process.send({
+        type: metric.type,
+        value,
+        time: Date.now(),
+      });
+    }
+  });
 });
 
-process.on('message', msg => msg === 'shutdown' ? metricsModules.forEach(m => m.module.stopWatcher()) : '');
+process.on('message', msg => {
+  if (msg === 'shutdown') {
+    sendMsg = false;
+    metricsModules.forEach(m => m.module.stopWatcher());
+  }
+});
