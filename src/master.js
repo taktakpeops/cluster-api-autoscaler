@@ -38,8 +38,7 @@ function intializeWorker(worker, metrics) {
       // look into total activities
       const totalWorkers = Object.keys(cluster.workers).length;
       if (
-        worker.getWorkerRecordsInPercentAvg(metric.type) <= metric.limit - 10 &&
-        activeWorkers.getWarmWorkers(metric.type).length < totalWorkers - 1 &&
+        !activeWorkers.hasHotMetrics(metrics) &&
         totalWorkers > minWorkers &&
         !activeWorkers.hasWorkerScaled()
       ) {
@@ -58,7 +57,6 @@ async function scaleUp(amountWorkers = 1) {
 
       const w = activeWorkers.add(id);
       // consider default warmup of 2000 ms
-      w.hasScaled(2000);
       intializeWorker(w, metricsList);
 
       worker.on('online', resolve);

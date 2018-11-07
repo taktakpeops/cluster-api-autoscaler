@@ -40,7 +40,7 @@ class ActiveWorkersList {
    * @param {Number} limit Optional, period of time in millisecond to observe.
    * @returns {Array.<ActiveWorker>} returns an array containing the workers being warm
    */
-  getWarmWorkers(type, limit = 1000) {
+  getHotWorkers(type, limit = 1000) {
     const metric = this.configuration.find(metric => metric.type === type);
 
     if (!metric) {
@@ -51,6 +51,11 @@ class ActiveWorkersList {
       .map(w => ({ ...w, avg: w.getWorkerRecordsInPercentAvg(type, limit) }))
       .filter(worker => worker.avg > metric.limit)
       .map(obj => ({ name: obj.name }));
+  }
+
+  hasHotMetrics(metrics) {
+    return metrics
+      .some(metric => this.stack.some(worker => worker.getWorkerRecordsInPercentAvg(metric.type) >= metric.limit));
   }
 
   /**
