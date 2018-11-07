@@ -32,7 +32,7 @@ describe('test ActiveWorkerList class', () => {
       worker.records.push({ type: 'cpu', value: (index % 2) ? 40 : 80, time: Date.now() });
     }));
 
-    const warmWorkers = ptr.getWarmWorkers('cpu', 1000);
+    const warmWorkers = ptr.getHotWorkers('cpu', 1000);
 
     assert.strictEqual(warmWorkers.length, 2);
     assert.deepStrictEqual(warmWorkers.find(x => x.name === 'tutu'), { name: 'tutu' });

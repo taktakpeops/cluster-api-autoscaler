@@ -1,5 +1,7 @@
 # cluster-api-autoscaler
 
+[![Build Status](https://travis-ci.org/jackTheRipper/cluster-api-autoscaler.svg?branch=master)](https://travis-ci.org/jackTheRipper/cluster-api-autoscaler)
+
 This projecf is an experiment around the NodeJS Cluster API.
 
 The goal is to bring a solution allowing a hybrid usage. you can either instantiate the autoscaler in your code or use it as a cli.
@@ -14,8 +16,11 @@ For now, the CLI is not available.
 
 An example of implementation can be found in the examples folder.
 
-The code has been tested with the current LTS of NodeJS (8.X) on Mac OS. It will most probably not work on Windows.
+The code has been tested with the current LTS of NodeJS (10.X) on Mac OS. It will most probably not work on Windows.
 
 ## ToDo
 
-- a lot of things
+- improve test coverage
+- implement graceful shutdown in example
+- provide example custom metrics
+- provide charts mono-process vs as (maybe Locust)

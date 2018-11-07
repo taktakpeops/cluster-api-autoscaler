@@ -24,6 +24,7 @@ function getMemoryUsageInPercent() {
 
 /**
  * @todo refactor !
+ * @returns {Boolean} has enough memory to scale
  */
 function canScaleUp() {
   const amountOfWorkers = Object.keys(cluster.workers).length;
