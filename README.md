@@ -1,6 +1,9 @@
 # cluster-api-autoscaler
 
 [![Build Status](https://travis-ci.org/jackTheRipper/cluster-api-autoscaler.svg?branch=master)](https://travis-ci.org/jackTheRipper/cluster-api-autoscaler)
+[![npm](https://img.shields.io/npm/v/cluster-api-autoscaler.svg)](https://www.npmjs.com/package/cluster-api-autoscaler)
+
+[![NPM](https://nodei.co/npm/cluster-api-autoscaler.png)](https://nodei.co/npm/cluster-api-autoscaler/)
 
 This projecf is an experiment around the NodeJS Cluster API.
 
