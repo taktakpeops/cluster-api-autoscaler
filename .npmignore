@@ -1,0 +1,5 @@
+./test
+./examples
+./.vscode
+.editorconfig
+.gitignore
