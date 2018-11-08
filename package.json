@@ -1,17 +1,13 @@
 {
   "name": "cluster-api-autoscaler",
-  "version": "0.1.0-beta",
+  "version": "0.1.1-beta",
   "description": "An auto-scaler for the NodeJS Cluster API.",
   "main": "./src/master.js",
   "scripts": {
     "test": "mocha",
     "lint": "xo"
   },
-  "bin": "./bin/as",
-  "files": [
-    "./src",
-    "./bin"
-  ],
+  "bin": "./bin/as.js",
   "xo": {
     "ecmaVersion": 6,
     "envs": [

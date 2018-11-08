@@ -99,7 +99,6 @@ addOptions(start)
 
 async function * retryAutoscaler({ retries, conf }) {
   try {
-    // eslint-disable-next-line
     yield * await startAutoScaler(conf);
   } catch (error) {
     yield Promise.resolve(retries--);
@@ -122,19 +121,19 @@ addOptions(forever)
       },
     });
 
-    const recurs = (r) => generator.next({
+    const recurs = r => generator.next({
       retries: r,
       conf: {
         workerScript: file,
         ...rest,
       },
     })
-    .catch(nbr => {
-      if (nbr instanceof Error || nbr === 0) {
-        throw nbr;
-      }
-      recurs(nbr);
-    });
+      .catch(error => {
+        if (error instanceof Error || error === 0) {
+          throw error;
+        }
+        recurs(error);
+      });
 
     await recurs(retries);
   });
