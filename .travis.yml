@@ -1,16 +1,29 @@
 language: node_js
 
 node_js:
-  - 8
-  - 10
-  - 11
+- 8
+- 10
+- 11
 
 install:
-  - npm install
+- npm install
 
 script:
-  - npm run lint
-  - npm run test
+- npm run lint
+- npm run test
+
+before_deploy:
+- rm -rf node_modules package-lock.json
+- export NODE_ENV=production
+- npm i
+
+deploy:
+  provider: npm
+  email: baudin.jean@gmail.com
+  api_key:
+    secure: RDzWi9BZWB3V1RTczDrb3rVoOTFyxjtb3ZOxMUGyL0cqMV43qhyUqDeTOyq+qtOVQbyy1gBZwgISDpJftpktxKRsasBJjhnw2Pi1uUh2OBwKZdON8It95z7LtP8jKgRLYprSPt3psbPsvU69hRxrYLPxMrReGIpPNLKErXm8yBqFDN+dre09hE8LY75xzWULPKtFWwspbAz+5HVMSEHQWSl9oJkCbyatHaAhIEsqwXnTZ902L+6u1fBLhH58vm4AwEYb5jhy4JnZLjR399B664eO/iLUXIlVqu56Nu+5x3QaEJfAdRyRRhCvzegAq8PK3o9eTA2gYZGkDPtx6Bb79DdsKY+Capk79hUIvA9zeXcr1mom49KFGpdo6PQlQ/n/cc1fWiGOA1nSBYP8AUq2Bj3Ej2GEW6pY/clXL6J/jVAfdz9TKUxGv63e74mjjgZ9o+GvHlfFoihMVIFjQTb8JrRikuuxVOAiWsi5DXeyDPHZ+79nlubX5EWFSU+ucvkw85Y2ET2zwyHewca3FAkyjolJXvze1LZtB/48nNGRtoPtXt6WVDhKaLgTsBTqmKvW7Jggy8ML9ct8mjYHzBxuP/L7TW/fHn0c+b8jJ4pzgUi7ERcrD6PbGAWfc44uZxGbdXMylixn2C2G1eQeRBPpG48No2Tqefa5p0yipqJbGXc=
+  on:
+    tags: true
 
 notifications:
   email: true
