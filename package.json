@@ -59,13 +59,13 @@
   },
   "homepage": "https://github.com/jackTheRipper/cluster-api-autoscaler#readme",
   "devDependencies": {
-    "@types/sinon": "^5.0.2",
-    "express": "^4.16.4",
-    "mocha": "^5.2.0",
-    "sinon": "^6.3.4",
-    "xo": "^0.23.0"
+    "@types/sinon": "~7.0.8",
+    "express": "~4.16.4",
+    "mocha": "~6.0.2",
+    "sinon": "~7.2.7",
+    "xo": "~0.24.0"
   },
   "dependencies": {
-    "commander": "^2.18.0"
+    "commander": "~2.19.0"
   }
 }
