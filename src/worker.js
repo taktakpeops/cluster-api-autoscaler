@@ -41,6 +41,7 @@ program
         console.warn('no custom module path specified');
         return '';
       }
+
       throw error;
     }
   })
@@ -50,7 +51,7 @@ const { file, metrics, customModulePath } = program;
 
 const metricsModules = loadModules(metrics, customModulePath);
 
-require(file); // eslint-disable-line import/no-unassigned-import
+require(file);
 
 let sendMsg = true;
 

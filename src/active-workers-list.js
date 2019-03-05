@@ -30,6 +30,7 @@ class ActiveWorkersList {
       if (worker.name !== name) {
         acc.push(worker);
       }
+
       return acc;
     }, []);
   }

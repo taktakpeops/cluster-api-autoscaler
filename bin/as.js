@@ -71,6 +71,7 @@ const addOptions = prog => prog
         console.warn('no custom module path specified');
         return '';
       }
+
       throw error;
     }
   });
@@ -132,6 +133,7 @@ addOptions(forever)
         if (error instanceof Error || error === 0) {
           throw error;
         }
+
         recurs(error);
       });
 
