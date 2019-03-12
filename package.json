@@ -37,7 +37,8 @@
     },
     "semicolon": true,
     "ignores": [
-      "./node_modules"
+      "./node_modules",
+      "./docs"
     ],
     "space": true
   },
